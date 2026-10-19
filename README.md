@@ -63,12 +63,11 @@ Without them the grid is still built, ready for load flow, with a warning for ev
 
    Everything else can stay as it is.
 2. Close PowerFactory: pypsa-pf starts it in the background.
-3. Run:
+3. Run either of:
 
 ```bash
 python -m pypsa_pf config.yaml                         # minimum-inertia snapshot -> PowerFactory
-python -m pypsa_pf config.yaml --snapshot "2013-01-11 23:00"
-python -m pypsa_pf config.yaml --no-powerfactory       # PyPSA part only (no PowerFactory needed)
+python -m pypsa_pf config.yaml --snapshot "2013-01-11 23:00" # a chosen snapshot -> PowerFactory
 ```
 
 4. Open PowerFactory and activate the grid (`powerfactory.grid_name`, default `PyPSA`): the diagram is drawn on activation.
