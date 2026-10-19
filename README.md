@@ -3,9 +3,9 @@
 Turn any instant of a solved **PyPSA-Eur** network (`*.nc`) into a **DIgSILENT PowerFactory** model, ready for load-flow and RMS simulation.
 
 ```
- solved .nc ──► equivalent inertia ──► snapshot ──► AC power flow ──► per (bus, carrier) ──► PowerFactory grid
- (PyPSA-Eur)    per bus / system      (min H or    (PyPSA, one       aggregation           + plant models
-                                       fixed time)  snapshot)                               + load flow check vs PyPSA
+ solved .nc ──► snapshot ──► AC power flow ──► per (bus, carrier) ──► PowerFactory grid
+ (PyPSA-Eur)   (min H or    (PyPSA, one       aggregation           + plant models
+                fixed time)  snapshot)                               + load flow check vs PyPSA
 ```
 
 Everything is plain Python and driven by one YAML file ([`config.example.yaml`](config.example.yaml), every option commented). Each step logs the checks needed to follow the process. Modelling details, HVDC options and how to use your own dynamic models: [docs/details.md](docs/details.md).
