@@ -51,28 +51,29 @@ Without them the grid is still built, ready for load flow, with a warning for ev
 
 ## Quick start
 
-1. Make your own settings file: copy config.example.yaml and rename the copy config.yaml. Open it and change three lines:
-yaml
+1. Make your own settings file: copy `config.example.yaml` and rename the copy `config.yaml`. Open it and change three lines:
+
+   ```yaml
    network: networks/my_network.nc     # your solved PyPSA-Eur network
 
    powerfactory:
      python_path: "C:/Program Files/DIgSILENT/PowerFactory 2025/Python/3.12"   # same Python version as your environment
      project: pypsa-pf_template          # the PowerFactory project imported above
+   ```
 
-Everything else can stay as it is.
-
+   Everything else can stay as it is.
 2. Close PowerFactory: pypsa-pf starts it in the background.
-
 3. Run:
 
-bash
+```bash
 python -m pypsa_pf config.yaml                         # minimum-inertia snapshot -> PowerFactory
 python -m pypsa_pf config.yaml --snapshot "2013-01-11 23:00"
 python -m pypsa_pf config.yaml --no-powerfactory       # PyPSA part only (no PowerFactory needed)
+```
 
-4. Open PowerFactory and activate the grid (powerfactory.grid_name, default PyPSA): the diagram is drawn on activation.
+4. Open PowerFactory and activate the grid (`powerfactory.grid_name`, default `PyPSA`): the diagram is drawn on activation.
 
-If the PowerFactory step fails, fix the cause and rerun only that step with python -m pypsa_pf.build model.pkl.
+If the PowerFactory step fails, fix the cause and rerun only that step with `python -m pypsa_pf.build model.pkl`.
 
 ## Citation
 
