@@ -82,6 +82,10 @@ If the PowerFactory step fails, fix the cause and rerun only that step with `pyt
 
 HVDC links are built by default with the WECC VSC-HVDC model (`export.links_as: wecc`). `links_as: hvdc` draws the real converters and DC line instead, but they have no control model in RMS simulations, so the DC side is not regulated there; use it for load flow only. See [docs/details.md](docs/details.md#hvdc-links).
 
+## Contributing
+
+Contributions are not open yet. For questions or suggestions, please contact the authors.
+
 ## Citation
 
 If you use this tool, please cite:
