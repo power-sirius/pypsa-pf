@@ -53,7 +53,7 @@ Without them the grid is still built, ready for load flow, with a warning for ev
 
 ## Example network
 
-[`examples/test.nc`](examples/test.nc) is a solved PyPSA-Eur network of Spain (mainland and the Balearic Islands, connected by an HVDC link), clustered to 31 buses, with hourly resolution for the weather year 2013. It was built with [PyPSA-Eur](https://github.com/PyPSA/pypsa-eur); its input data keep their original licences (mostly CC-BY 4.0, see the PyPSA-Eur documentation).
+[`examples/test.nc`](examples/test.nc) is a solved PyPSA-Eur network of Spain (mainland and the Balearic Islands, connected by an HVDC link), clustered to 31 buses, with hourly resolution for January 2013 (744 snapshots). It was built with [PyPSA-Eur](https://github.com/PyPSA/pypsa-eur); its input data keep their original licences (mostly CC-BY 4.0, see the PyPSA-Eur documentation).
 
 ## Quick start
 
