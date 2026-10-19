@@ -59,7 +59,7 @@ units_status:
 # -----------------------------------------------------------------------------
 export:
   bus_carriers: [AC]           # bus carriers that become PowerFactory terminals
-  min_capacity_mw: 10          # PQ (bus, carrier) groups smaller than this are not exported
+  min_capacity_mw: 1           # PQ (bus, carrier) groups smaller than this are not exported
   min_pv_capacity_mw: 10       # groups smaller than this do not control voltage
   rated_power_factor: 1.0      # machine rating = online MW / rated_power_factor
   line_charging: true          # include the lines' susceptance in the pi-lines
