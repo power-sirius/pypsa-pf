@@ -1,0 +1,175 @@
+# =============================================================================
+# pypsa-pf configuration
+#
+# Copy this file to config.yaml and edit it. Every key is optional except
+# `network` (and `powerfactory.python_path` to build in PowerFactory): omitted
+# keys take the defaults of pypsa_pf/config.py, which are the values below.
+# =============================================================================
+
+network: networks/elec_s_31_ec_lcopt_1H.nc   # solved PyPSA-Eur network (path relative to this file)
+
+# -----------------------------------------------------------------------------
+# Which instant to export
+# -----------------------------------------------------------------------------
+snapshot:
+  method: min_inertia          # min_inertia: snapshot with the lowest system inertia | timestamp
+  timestamp: null              # used with method: timestamp, e.g. "2013-01-11 11:00" (or --snapshot)
+  start: null                  # optional search window for min_inertia, e.g. "2013-01-01"
+  end: null
+  hours: null                  # e.g. [10, 18]: only consider 10:00-18:00
+
+# -----------------------------------------------------------------------------
+# Carriers: one entry per PyPSA carrier. Only the fields you change are needed;
+# carriers not listed keep their defaults (see pypsa_pf/config.py).
+#   type        synchronous | converter
+#   H           inertia constant [s]. Used to find the minimum-inertia snapshot:
+#               H_bus = sum(H*S)/sum(S), S = online capacity (synchronous) or |P|
+#               (converter). For GFM converters with a VSM also Ta = 2 H.
+#   pf_control  PV (voltage control) | PQ, in the PyPSA power flow AND in PowerFactory
+#               (av_mode constv / constq). Offline units are always PQ with Q = 0.
+#   pf_type     (synchronous) name of the TypSym template in the PowerFactory
+#               Equipment Type Library copied for every machine of this carrier
+#   pf_category (converter) ElmGenstat.cCategory: wgen | pv | stor | ...
+#   control     (converter) default strategy: GFL | GFM (see converter_control)
+#   sc_ratio    (converter) short-circuit power Skss = sc_ratio * rating
+# -----------------------------------------------------------------------------
+carriers:
+  CCGT:    {type: synchronous, H: 6, pf_control: PV, pf_type: CCGT}
+  nuclear: {type: synchronous, H: 5, pf_control: PV, pf_type: nuclear}
+  biomass: {type: synchronous, H: 4, pf_control: PQ, pf_type: hydro}
+  hydro:   {type: synchronous, H: 4, pf_control: PV, pf_type: hydro}
+  PHS:     {type: synchronous, H: 4, pf_control: PQ, pf_type: hydro}
+  ror:     {type: synchronous, H: 3, pf_control: PQ, pf_type: ror}
+  onwind:  {type: converter, H: 0.5, pf_control: PQ, pf_category: wgen, control: GFL, sc_ratio: 1.5}
+  solar:   {type: converter, H: 0.5, pf_control: PQ, pf_category: pv,   control: GFL, sc_ratio: 1.5}
+  battery: {type: converter, H: 3,   pf_control: PQ, pf_category: stor, control: GFM, sc_ratio: 1.5}
+
+ignore_carriers: [load]        # not exported (PyPSA-Eur load-shedding generators)
+
+# -----------------------------------------------------------------------------
+# On/off state of units without unit commitment
+# -----------------------------------------------------------------------------
+units_status:
+  idle_offline: true           # non-committable units dispatched below idle_tol_mw are treated as
+  idle_tol_mw: 0.1             # off: no inertia, not created in PowerFactory
+
+# -----------------------------------------------------------------------------
+# What is exported
+# -----------------------------------------------------------------------------
+export:
+  bus_carriers: [AC]           # bus carriers that become PowerFactory terminals
+  min_capacity_mw: 10          # PQ (bus, carrier) groups smaller than this are not exported
+  min_pv_capacity_mw: 10       # groups smaller than this do not control voltage
+  rated_power_factor: 1.0      # machine rating = online MW / rated_power_factor
+  line_charging: true          # include the lines' susceptance in the pi-lines
+  links_as: hvdc               # PyPSA links between two exported buses:
+                               #   hvdc:  VSC - DC line - VSC, all drawn (no control model in RMS:
+                               #          the DC voltage is not regulated in dynamic simulations)
+                               #   wecc:  a static generator at each end + the WECC VSC-HVDC model
+                               #          (see hvdc.wecc); recommended for RMS simulations
+                               #   loads: a fixed-P load at each end
+
+# -----------------------------------------------------------------------------
+# AC power flow (PyPSA)
+# -----------------------------------------------------------------------------
+power_flow:
+  distribute_slack: true
+  x_tol: 1.0e-6
+  load_reactive:               # PyPSA-Eur loads have only P
+    method: tan_phi            # tan_phi: Q = tan_phi * P | random: tan_phi drawn from range
+    tan_phi: 0.33              # cos(phi) ~ 0.95
+    range: [0.2, 0.48]
+    seed: 42
+  voltage_limits: [0.9, 1.1]   # only for the warnings
+  max_line_loading: 1.0        # only for the warnings
+
+# -----------------------------------------------------------------------------
+# Reactive compensation: shunts (capacitor or reactor) next to the generators that
+# control voltage, so they are not overloaded with reactive power. Bus voltages do
+# not change; only the generator's Q does.
+# -----------------------------------------------------------------------------
+reactive_compensation:
+  mode: all                    # all:    the shunt takes all the generator's Q
+                               # excess: only what exceeds sqrt(S^2 - P^2)
+                               # margin: the generator keeps up to +/- margin_pu * S
+                               # none:   no shunts
+  margin_pu: 0.1
+  min_mvar: 1.0                # smaller shunts are not created
+
+# -----------------------------------------------------------------------------
+# HVDC links (export.links_as: hvdc or wecc)
+# -----------------------------------------------------------------------------
+hvdc:
+  rating_margin: 1.1           # converter rating = 1.1 x link capacity
+  r_ohm_per_km: 0.0001         # DC line resistance x PyPSA link length (PyPSA links are lossless)
+
+  # links_as: hvdc
+  v_dc_kv: 700                 # DC voltage; >= AC kV / 0.61 (PWM modulation limit, no converter transformer)
+  p_control_end: bus0          # this converter controls P (P-Q, P = PyPSA flow); the other Vdc (Vdc-Q)
+  p_sign: -1                   # PowerFactory psetp > 0 = injection into AC (the log checks the direction)
+  ctrlStruct: 0                # 0 grid-following, 1 grid-forming
+
+  # links_as: wecc. Converter 1 = sending end, Converter 2 = receiving end (keeps the PyPSA flow;
+  # the sending end also supplies the DC losses). Set from the link: MW_base = capacity,
+  # Idmax = Pmax * MW_base / Udref, Rdc = r_ohm_per_km * length (unless Rdc is in params).
+  wecc:
+    composite: hvdc            # power control: the link holds the PyPSA flow
+    composite_fctrl: hvdc f-ctrl   # frequency control of one end (see README)
+    frequency_control: false   # false: power control
+                               # true:  frequency control of the receiving end
+                               # auto:  frequency control of the end without synchronous machines, if any
+    fctrl: {droop: 0.05, Ti: 2.0, fnom: 1.0}   # Kp = MW_base/droop, Ki = Kp/Ti; fnom 1 = PLL fmeas in pu
+    params: {eff: 1.0, Refflag_r: 0, Refflag_i: 0}   # any VHVDC1 parameter by name (0 = Q control)
+
+# -----------------------------------------------------------------------------
+# Plant models of synchronous machines: a reference composite (ElmComp) copied for
+# every machine, which goes into slot 1 (Generator). See README.
+# -----------------------------------------------------------------------------
+plant_models:
+  default: SG plant            # name of the reference composite; null = no plant models
+  # hydro: Hydro plant         # per-carrier override
+  enabled: {gov: true, avr: true, vco: true}   # switch models on/off in every copy (by model name)
+  gov_droop: 0.05              # permanent droop R of every governor (TGOV1)
+  off_when_pumping: [gov]      # pumping PHS (P < 0): AVR on, governor off
+
+# -----------------------------------------------------------------------------
+# Grid-following / grid-forming converters
+# -----------------------------------------------------------------------------
+converter_control:
+  strategies:
+    GFL: {description: Grid-following, ctrlStruct: 0, pf_attributes: {}, plant_model: null}
+    GFM: {description: Grid-forming,   ctrlStruct: 1, pf_attributes: {}, plant_model: VSM}
+    # pf_attributes: extra ElmGenstat attributes for that strategy, e.g. {Kpf: 0}
+    # plant_model:   reference composite copied for every converter with that strategy
+  droop: 0.05                  # 5 % P-f droop: Kpf = rating/(0.05*50) MW/Hz; VSM Dp = 1/0.05 = 20 pu
+  vsm_dsl: vsm_control         # name of the VSM model inside the VSM composite (Ta = 2 H, Dp = 1/droop)
+  overrides: []                # per-unit exceptions (carrier and/or bus), e.g.
+                               #   - {carrier: onwind, bus: "ES0 14", control: GFM}
+  gfm_if_no_sync: true         # a converter that must be the slack (no synchronous machine online
+                               # in its sub-network) becomes GFM
+  hook: null                   # optional "my_module:my_function" called for every converter
+
+# -----------------------------------------------------------------------------
+# PowerFactory
+# -----------------------------------------------------------------------------
+powerfactory:
+  python_path: "C:/Program Files/DIgSILENT/PowerFactory 2025/Python/3.12"   # match your Python version
+  project: null                # project name or full path, e.g. "\\user\\my_project"; null = active project
+  grid_name: PyPSA             # created if missing
+  clear_grid: true             # delete the grid's previous content first
+  templates_grid: Templates    # folder (Library\Templates) or grid with the reference composites
+  clear_events: true           # delete the study case's simulation events (they point to the old build)
+  clear_result_variables: true # delete the result variables of the study case's results
+  frequency: 50
+  run_load_flow: true          # run the load flow and compare it with PyPSA
+  show_window: false           # show PowerFactory while building (much slower)
+  separate_process: true       # build in a separate Python process (PyPSA and PowerFactory never together)
+  model_file: model.pkl        # snapshot model handed to that process
+  diagram:
+    drawing_format: A0         # page format; a custom one (e.g. A1000) must exist in the project
+    page_size: [1189, 841]     # mm (one number for a square page)
+    area_x: [60, 1130]         # bus coordinates are scaled into this area [mm]
+    area_y: [60, 790]
+    element_offset: 25         # distance from a bus to its generators/loads
+    element_spread: 26         # generators/loads spread over +/- this around the bus
+    shunt_symbol: d_shunt      # PowerFactory symbol for ElmShnt

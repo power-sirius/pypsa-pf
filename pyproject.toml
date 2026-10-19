@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pypsa-pf"
+version = "0.1.0"
+description = "Export one snapshot of a solved PyPSA(-Eur) network to a DIgSILENT PowerFactory model"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Juan Diego Rios-Penaloza", email = "juan.rios@energia.imdea.org" }]
+dependencies = ["pypsa>=0.25", "pandas>=1.5", "numpy", "pyyaml"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+pypsa-pf = "pypsa_pf.__main__:main"
+
+[tool.setuptools]
+packages = ["pypsa_pf"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
