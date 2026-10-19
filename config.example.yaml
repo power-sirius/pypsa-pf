@@ -6,7 +6,8 @@
 # keys take the defaults of pypsa_pf/config.py, which are the values below.
 # =============================================================================
 
-network: networks/elec_s_31_ec_lcopt_1H.nc   # solved PyPSA-Eur network (path relative to this file)
+network: examples/test.nc   # solved PyPSA-Eur network (path relative to this file);
+                                                  # the example network of Spain, or your own
 
 # -----------------------------------------------------------------------------
 # Which instant to export
@@ -62,11 +63,11 @@ export:
   min_pv_capacity_mw: 10       # groups smaller than this do not control voltage
   rated_power_factor: 1.0      # machine rating = online MW / rated_power_factor
   line_charging: true          # include the lines' susceptance in the pi-lines
-  links_as: hvdc               # PyPSA links between two exported buses:
-                               #   hvdc:  VSC - DC line - VSC, all drawn (no control model in RMS:
-                               #          the DC voltage is not regulated in dynamic simulations)
+  links_as: wecc               # PyPSA links between two exported buses:
                                #   wecc:  a static generator at each end + the WECC VSC-HVDC model
-                               #          (see hvdc.wecc); recommended for RMS simulations
+                               #          (see hvdc.wecc); for RMS simulations
+                               #   hvdc:  VSC - DC line - VSC, all drawn, but no control model in RMS:
+                               #          the DC side is not regulated in dynamic simulations
                                #   loads: a fixed-P load at each end
 
 # -----------------------------------------------------------------------------
@@ -97,7 +98,7 @@ reactive_compensation:
   min_mvar: 1.0                # smaller shunts are not created
 
 # -----------------------------------------------------------------------------
-# HVDC links (export.links_as: hvdc or wecc)
+# HVDC links (export.links_as: wecc or hvdc)
 # -----------------------------------------------------------------------------
 hvdc:
   rating_margin: 1.1           # converter rating = 1.1 x link capacity

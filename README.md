@@ -15,10 +15,12 @@ Everything is plain Python and driven by one YAML file ([`config.example.yaml`](
 PowerFactory's Python API only works with the Python versions your PowerFactory release ships (see the folders in `...\DIgSILENT\PowerFactory 20xx\Python\`). Create the environment with one of them:
 
 ```bash
-conda create -n pypsa-pf python=3.12
+conda create -n pypsa-pf python=3.x      # x = version of your PowerFactory's Python folder
 conda activate pypsa-pf
 pip install -e .
 ```
+
+The same version must appear later in `powerfactory.python_path` in `config.yaml`: an environment with `python=3.10` needs `.../PowerFactory 20xx/Python/3.10`.
 
 ## PowerFactory project
 
@@ -49,12 +51,16 @@ The dynamic models (plant models of synchronous machines, VSM for grid-forming c
 
 Without them the grid is still built, ready for load flow, with a warning for every missing model.
 
+## Example network
+
+[`examples/test.nc`](examples/test.nc) is a solved PyPSA-Eur network of Spain (mainland and the Balearic Islands, connected by an HVDC link), clustered to 31 buses, with hourly resolution for the weather year 2013. It was built with [PyPSA-Eur](https://github.com/PyPSA/pypsa-eur); its input data keep their original licences (mostly CC-BY 4.0, see the PyPSA-Eur documentation).
+
 ## Quick start
 
 1. Make your own settings file: copy `config.example.yaml` and rename the copy `config.yaml`. Open it and change three lines:
 
    ```yaml
-   network: networks/my_network.nc     # your solved PyPSA-Eur network
+   network: examples/test.nc     # the example network, or your own solved PyPSA-Eur network
 
    powerfactory:
      python_path: "C:/Program Files/DIgSILENT/PowerFactory 2025/Python/3.12"   # same Python version as your environment
@@ -63,16 +69,18 @@ Without them the grid is still built, ready for load flow, with a warning for ev
 
    Everything else can stay as it is.
 2. Close PowerFactory: pypsa-pf starts it in the background.
-3. Run either of:
+3. In an Anaconda prompt, activate the environment (`conda activate pypsa-pf`), go to the pypsa-pf folder and run either of:
 
 ```bash
 python -m pypsa_pf config.yaml                         # minimum-inertia snapshot -> PowerFactory
-python -m pypsa_pf config.yaml --snapshot "2013-01-11 23:00" # a chosen snapshot -> PowerFactory
+python -m pypsa_pf config.yaml --snapshot "2013-01-11 23:00"   # a chosen snapshot -> PowerFactory
 ```
 
 4. Open PowerFactory and activate the grid (`powerfactory.grid_name`, default `PyPSA`): the diagram is drawn on activation.
 
 If the PowerFactory step fails, fix the cause and rerun only that step with `python -m pypsa_pf.build model.pkl`.
+
+HVDC links are built by default with the WECC VSC-HVDC model (`export.links_as: wecc`). `links_as: hvdc` draws the real converters and DC line instead, but they have no control model in RMS simulations, so the DC side is not regulated there; use it for load flow only. See [docs/details.md](docs/details.md#hvdc-links).
 
 ## Citation
 

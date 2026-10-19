@@ -67,7 +67,7 @@ DEFAULTS: dict[str, Any] = {
         "min_pv_capacity_mw": 10.0,  # groups below this do not control voltage
         "rated_power_factor": 1.0,  # S_rated = P_online / rated_power_factor (cosn)
         "line_charging": True,  # include the lines' shunt susceptance (pi-model)
-        "links_as": "hvdc",  # hvdc: VSC + DC line + VSC | wecc: WECC VSC-HVDC model on two static generators | loads: fixed-P loads
+        "links_as": "wecc",  # wecc: WECC VSC-HVDC model on two static generators | hvdc: VSC + DC line + VSC | loads
     },
     "power_flow": {
         "distribute_slack": True,

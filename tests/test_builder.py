@@ -194,8 +194,8 @@ def test_wecc_hvdc():
     assert par[7] == pytest.approx(0.03) and par[22] == 1.0 and par[38] == 0 and par[48] == 0  # Rdc, eff, Refflag_r/i
 
 
-def test_hvdc_vsc_still_default():
-    objs = build_grid(mpf.Application(), model_with_link(), load_config())
+def test_hvdc_vsc_option():
+    objs = build_grid(mpf.Application(), model_with_link(), load_config(export={"links_as": "hvdc"}))
     assert len(by_class(objs["grid"], "ElmVscmono")) == 2
 
 

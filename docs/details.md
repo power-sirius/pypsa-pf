@@ -67,8 +67,8 @@ converter_control:
 
 | `links_as` | Built as | For |
 |---|---|---|
+| `wecc` (default) | `ElmGenstat` at each end + the WECC VSC-HVDC model (DIgSILENT library, `VHVDC1`) | RMS simulations |
 | `hvdc` | `ElmVscmono` (P-Q) – DC terminal – DC line – DC terminal – `ElmVscmono` (Vdc-Q) | load flow; drawn as a real link. No control model in RMS: the DC voltage is not regulated in simulations |
-| `wecc` | `ElmGenstat` at each end + the WECC VSC-HVDC model (DIgSILENT library, `VHVDC1`) | RMS simulations |
 | `loads` | a fixed-P load at each end | simple studies |
 
 With `wecc`, the link holds the PyPSA flow (`hvdc.wecc.frequency_control: false`), or controls the frequency of one end (`true`: receiving end; `auto`: the end without synchronous machines, e.g. an island). Frequency control adds a PLL and a PI controller on the model's power order: `Pref = P0 + Kp·Δf + Ki·∫Δf`. The island still needs a grid-forming source (`gfm_if_no_sync`). The DC line resistance is `hvdc.r_ohm_per_km` × the PyPSA link length in both `hvdc` and `wecc`.
