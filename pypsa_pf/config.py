@@ -63,7 +63,7 @@ DEFAULTS: dict[str, Any] = {
     },
     "export": {
         "bus_carriers": ["AC"],
-        "min_capacity_mw": 10.0,  # PQ (bus, carrier) groups below this are not exported
+        "min_capacity_mw": 1.0,  # PQ (bus, carrier) groups below this are not exported
         "min_pv_capacity_mw": 10.0,  # groups below this do not control voltage
         "rated_power_factor": 1.0,  # S_rated = P_online / rated_power_factor (cosn)
         "line_charging": True,  # include the lines' shunt susceptance (pi-model)
